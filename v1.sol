@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import {IERC20} from "@thirdweb-dev/contracts/eip/interface/IERC20.sol";
-import {Ownable} from "@thirdweb-dev/contracts/extension/Ownable.sol";
-import {ReentrancyGuard} from "@thirdweb-dev/contracts/external-deps/@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import {AccessControl} from "@thirdweb-dev/contracts/external-deps/@openzeppelin/contracts/access/AccessControl.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 
 contract PolicastMarket is Ownable, ReentrancyGuard, AccessControl {
     bytes32 public constant QUESTION_CREATOR_ROLE = keccak256("QUESTION_CREATOR_ROLE");
@@ -62,13 +62,13 @@ contract PolicastMarket is Ownable, ReentrancyGuard, AccessControl {
     event SharesPurchased(uint256 indexed marketId, address indexed buyer, bool isOptionA, uint256 amount);
     event Claimed(uint256 indexed marketId, address indexed user, uint256 amount);
 
-    function _canSetOwner() internal view virtual override returns (bool) {
+    function _canSetOwner() internal view virtual returns (bool) {
         return msg.sender == owner();
     }
 
-    constructor(address _bettingToken) {
+    constructor(address _bettingToken)   Ownable(msg.sender) {
         bettingToken = IERC20(_bettingToken);
-        _setupOwner(msg.sender);
+      
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
