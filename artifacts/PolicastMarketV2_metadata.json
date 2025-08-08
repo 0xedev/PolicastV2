@@ -2107,11 +2107,11 @@
 			]
 		},
 		"v2.sol": {
-			"keccak256": "0xeaf4819a5566b888efa90aa4ebb33c7f637cd4a51eb778db1bcf03d46e8f073b",
+			"keccak256": "0xcbd43c37d37481a171e18e9f1d3ce89743a000c1fa58353c0213ce84cd1e0c9c",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://0b6a93eac88ee379415525f7bf138dfb058a974057e73a34335a137a125cdfb1",
-				"dweb:/ipfs/QmXs9aGMUeKw9BiGcBCEq9eVPH4CfYMTa3tJkoxFRHzKU4"
+				"bzz-raw://5dade087c842cc3335d6be21a081c92016b536075f42d16b218489df67066669",
+				"dweb:/ipfs/QmYuLX7jCNLj3BPeh6Tm6QZJLysJpLr4VVEQR9CfoyDPvh"
 			]
 		}
 	},
