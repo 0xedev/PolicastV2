@@ -1,6 +1,6 @@
 {
 	"compiler": {
-		"version": "0.8.30+commit.73712a01"
+		"version": "0.8.26+commit.8a97fa7a"
 	},
 	"language": "Solidity",
 	"output": {
@@ -2021,7 +2021,7 @@
 		"compilationTarget": {
 			"v2.sol": "PolicastMarketV2"
 		},
-		"evmVersion": "prague",
+		"evmVersion": "cancun",
 		"libraries": {},
 		"metadata": {
 			"bytecodeHash": "ipfs"
@@ -2107,11 +2107,11 @@
 			]
 		},
 		"v2.sol": {
-			"keccak256": "0x9638784a198fab4eada8a46f491b2c4f8bb339831d2a36c29b2d59b71c1ff7cd",
+			"keccak256": "0xeaf4819a5566b888efa90aa4ebb33c7f637cd4a51eb778db1bcf03d46e8f073b",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://23749a3d0e2b8a3856fa6826347525ab7556c091aaf9be5288f0abce376095e7",
-				"dweb:/ipfs/QmUCU9NdAvQYpkcXviPXpAv14wT6LvjGGJp5b6ufY1Cx5m"
+				"bzz-raw://0b6a93eac88ee379415525f7bf138dfb058a974057e73a34335a137a125cdfb1",
+				"dweb:/ipfs/QmXs9aGMUeKw9BiGcBCEq9eVPH4CfYMTa3tJkoxFRHzKU4"
 			]
 		}
 	},

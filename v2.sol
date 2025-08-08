@@ -21,6 +21,8 @@ contract PolicastMarketV2 is Ownable, ReentrancyGuard, AccessControl, Pausable {
         ECONOMICS,
         SCIENCE,
         WEATHER,
+        FARCASTER,
+        BITCOIN,
         OTHER
     }
 
