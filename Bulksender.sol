@@ -6,10 +6,10 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-/// @title BulkSender
+/// @title RainDrop
 /// @notice Send ETH or ERC20 tokens to many recipients in one tx.
 /// @dev ERC20 bulk transfer uses transferFrom, so users must approve this contract first.
-contract BulkSender is Ownable, ReentrancyGuard {
+contract RainDrop is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     event BulkETHTransferred(address indexed sender, uint256 total, uint256 recipientsCount);
