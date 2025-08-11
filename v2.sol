@@ -67,6 +67,8 @@ contract PolicastMarketV2 is Ownable, ReentrancyGuard, AccessControl, Pausable {
         address[] participants;
         uint256 payoutIndex;
         uint256 feeCollected;
+        uint256 rewardAmount;
+        bool freeEntry;
     }
 
     struct Order {
@@ -240,58 +242,62 @@ contract PolicastMarketV2 is Ownable, ReentrancyGuard, AccessControl, Pausable {
     }
 
     // Market Creation
-    function createMarket(
-        string memory _question,
-        string memory _description,
-        string[] memory _optionNames,
-        string[] memory _optionDescriptions,
-        uint256 _duration,
-        MarketCategory _category
-    ) external whenNotPaused returns (uint256) {
-        require(
-            msg.sender == owner() || hasRole(QUESTION_CREATOR_ROLE, msg.sender),
-            "Not authorized to create markets"
-        );
-        require(_duration >= MIN_MARKET_DURATION && _duration <= MAX_MARKET_DURATION, "Invalid duration");
-        require(bytes(_question).length > 0, "Question cannot be empty");
-        require(_optionNames.length >= 2 && _optionNames.length <= MAX_OPTIONS, "Invalid number of options");
-        require(_optionNames.length == _optionDescriptions.length, "Options and descriptions length mismatch");
-
-        uint256 marketId = marketCount++;
-        Market storage market = markets[marketId];
-        market.question = _question;
-        market.description = _description;
-        market.endTime = block.timestamp + _duration;
-        market.category = _category;
-        market.creator = msg.sender;
-        market.createdAt = block.timestamp;
-        market.optionCount = _optionNames.length;
-
-        // Initialize options with equal starting prices
-        uint256 initialPrice = 1e18 / _optionNames.length; // Equal probability distribution
-        for (uint256 i = 0; i < _optionNames.length; i++) {
-            market.options[i] = MarketOption({
-                name: _optionNames[i],
-                description: _optionDescriptions[i],
-                totalShares: 0,
-                totalVolume: 0,
-                currentPrice: initialPrice,
-                isActive: true
-            });
-
-            // Initialize price history
-            priceHistory[marketId][i].push(PricePoint({
-                price: initialPrice,
-                timestamp: block.timestamp,
-                volume: 0
-            }));
-        }
-
-        categoryMarkets[_category].push(marketId);
-
-        emit MarketCreated(marketId, _question, _optionNames, market.endTime, _category, msg.sender);
-        return marketId;
+  function createMarket(
+    string memory _question,
+    string memory _description,
+    string[] memory _optionNames,
+    string[] memory _optionDescriptions,
+    uint256 _duration,
+    MarketCategory _category,
+    uint256 _rewardAmount,
+    bool _freeEntry
+) external whenNotPaused returns (uint256) {
+    require(
+        msg.sender == owner() || hasRole(QUESTION_CREATOR_ROLE, msg.sender),
+        "Not authorized to create markets"
+    );
+    require(_duration >= MIN_MARKET_DURATION && _duration <= MAX_MARKET_DURATION, "Invalid duration");
+    require(bytes(_question).length > 0, "Question cannot be empty");
+    require(_optionNames.length >= 2 && _optionNames.length <= MAX_OPTIONS, "Invalid number of options");
+    require(_optionNames.length == _optionDescriptions.length, "Options and descriptions length mismatch");
+    if (_freeEntry) {
+        require(_rewardAmount > 0, "Free-entry market requires a reward");
+        require(bettingToken.transferFrom(msg.sender, address(this), _rewardAmount), "Reward transfer failed");
     }
+
+    uint256 marketId = marketCount++;
+    Market storage market = markets[marketId];
+    market.question = _question;
+    market.description = _description;
+    market.endTime = block.timestamp + _duration;
+    market.category = _category;
+    market.creator = msg.sender;
+    market.createdAt = block.timestamp;
+    market.optionCount = _optionNames.length;
+    market.rewardAmount = _rewardAmount;
+    market.freeEntry = _freeEntry;
+
+    uint256 initialPrice = _freeEntry ? 0 : 1e18 / _optionNames.length;
+    for (uint256 i = 0; i < _optionNames.length; i++) {
+        market.options[i] = MarketOption({
+            name: _optionNames[i],
+            description: _optionDescriptions[i],
+            totalShares: 0,
+            totalVolume: 0,
+            currentPrice: initialPrice,
+            isActive: true
+        });
+        priceHistory[marketId][i].push(PricePoint({
+            price: initialPrice,
+            timestamp: block.timestamp,
+            volume: 0
+        }));
+    }
+
+    categoryMarkets[_category].push(marketId);
+    emit MarketCreated(marketId, _question, _optionNames, market.endTime, _category, msg.sender);
+    return marketId;
+}
 
     function validateMarket(uint256 _marketId) external validMarket(_marketId) {
         require(hasRole(MARKET_VALIDATOR_ROLE, msg.sender) || msg.sender == owner(), "Not authorized");
@@ -302,74 +308,70 @@ contract PolicastMarketV2 is Ownable, ReentrancyGuard, AccessControl, Pausable {
     }
 
     // Trading Functions
-    function buyShares(
-        uint256 _marketId,
-        uint256 _optionId,
-        uint256 _quantity,
-        uint256 _maxPricePerShare
-    ) external nonReentrant whenNotPaused validMarket(_marketId) marketActive(_marketId) validOption(_marketId, _optionId) {
-        require(_quantity > 0, "Quantity must be positive");
-        require(markets[_marketId].validated, "Market not validated");
+   function buyShares(
+    uint256 _marketId,
+    uint256 _optionId,
+    uint256 _quantity,
+    uint256 _maxPricePerShare
+) external nonReentrant whenNotPaused validMarket(_marketId) marketActive(_marketId) validOption(_marketId, _optionId) {
+    require(_quantity > 0, "Quantity must be positive");
+    require(markets[_marketId].validated, "Market not validated");
 
-        Market storage market = markets[_marketId];
-        MarketOption storage option = market.options[_optionId];
+    Market storage market = markets[_marketId];
+    MarketOption storage option = market.options[_optionId];
 
+    uint256 totalCost = 0;
+    uint256 fee = 0;
+
+    if (!market.freeEntry) {
         uint256 currentPrice = calculateCurrentPrice(_marketId, _optionId);
         require(currentPrice <= _maxPricePerShare, "Price too high");
-
-        uint256 totalCost = currentPrice * _quantity / 1e18;
-        uint256 fee = totalCost * platformFeeRate / 10000;
-        uint256 netCost = totalCost + fee;
-
-        require(bettingToken.transferFrom(msg.sender, address(this), netCost), "Transfer failed");
-
-        // Update user shares
-        if (market.userShares[msg.sender][_optionId] == 0 && _isNewParticipant(msg.sender, _marketId)) {
-            market.participants.push(msg.sender);
-            if (userPortfolios[msg.sender].totalInvested == 0) {
-                allParticipants.push(msg.sender);
-            }
-        }
-
-        market.userShares[msg.sender][_optionId] += _quantity;
-        option.totalShares += _quantity;
-        option.totalVolume += totalCost;
-        market.totalLiquidity += totalCost;
-        market.totalVolume += totalCost;
-        market.feeCollected += fee;
-
-        // Update user portfolio
-        userPortfolios[msg.sender].totalInvested += netCost;
-        userPortfolios[msg.sender].tradeCount++;
-
-        // Update price based on demand
-        option.currentPrice = calculateNewPrice(_marketId, _optionId, _quantity, true);
-
-        // Record price history
-        priceHistory[_marketId][_optionId].push(PricePoint({
-            price: option.currentPrice,
-            timestamp: block.timestamp,
-            volume: totalCost
-        }));
-
-        // Record trade
-        Trade memory trade = Trade({
-            marketId: _marketId,
-            optionId: _optionId,
-            buyer: msg.sender,
-            seller: address(0), // Market maker
-            price: currentPrice,
-            quantity: _quantity,
-            timestamp: block.timestamp,
-            orderType: OrderType.MARKET
-        });
-
-        userTradeHistory[msg.sender].push(trade);
-        marketTrades[_marketId].push(trade);
-
-        emit TradeExecuted(_marketId, _optionId, msg.sender, address(0), currentPrice, _quantity, tradeCount++);
-        emit FeeCollected(_marketId, fee);
+        totalCost = currentPrice * _quantity / 1e18;
+        fee = totalCost * platformFeeRate / 10000;
+        require(bettingToken.transferFrom(msg.sender, address(this), totalCost + fee), "Transfer failed");
     }
+
+    if (market.userShares[msg.sender][_optionId] == 0 && _isNewParticipant(msg.sender, _marketId)) {
+        market.participants.push(msg.sender);
+        if (userPortfolios[msg.sender].totalInvested == 0) {
+            allParticipants.push(msg.sender);
+        }
+    }
+
+    market.userShares[msg.sender][_optionId] += _quantity;
+    option.totalShares += _quantity;
+    option.totalVolume += totalCost;
+    market.totalLiquidity += totalCost;
+    market.totalVolume += totalCost;
+    market.feeCollected += fee;
+
+    userPortfolios[msg.sender].totalInvested += totalCost + fee;
+    userPortfolios[msg.sender].tradeCount++;
+
+    option.currentPrice = market.freeEntry ? 0 : calculateNewPrice(_marketId, _optionId, _quantity, true);
+    priceHistory[_marketId][_optionId].push(PricePoint({
+        price: option.currentPrice,
+        timestamp: block.timestamp,
+        volume: totalCost
+    }));
+
+    Trade memory trade = Trade({
+        marketId: _marketId,
+        optionId: _optionId,
+        buyer: msg.sender,
+        seller: address(0),
+        price: market.freeEntry ? 0 : calculateCurrentPrice(_marketId, _optionId),
+        quantity: _quantity,
+        timestamp: block.timestamp,
+        orderType: OrderType.MARKET
+    });
+
+    userTradeHistory[msg.sender].push(trade);
+    marketTrades[_marketId].push(trade);
+
+    emit TradeExecuted(_marketId, _optionId, msg.sender, address(0), trade.price, _quantity, tradeCount++);
+    if (fee > 0) emit FeeCollected(_marketId, fee);
+}
 
     function sellShares(
         uint256 _marketId,
@@ -462,27 +464,33 @@ contract PolicastMarketV2 is Ownable, ReentrancyGuard, AccessControl, Pausable {
     }
 
     // Payout Functions
-    function claimWinnings(uint256 _marketId) external nonReentrant validMarket(_marketId) {
-        Market storage market = markets[_marketId];
-        require(market.resolved && !market.disputed, "Market not ready for claims");
-        require(!market.hasClaimed[msg.sender], "Already claimed");
+  function claimWinnings(uint256 _marketId) external nonReentrant validMarket(_marketId) {
+    Market storage market = markets[_marketId];
+    require(market.resolved && !market.disputed, "Market not ready for claims");
+    require(!market.hasClaimed[msg.sender], "Already claimed");
 
-        uint256 userWinningShares = market.userShares[msg.sender][market.winningOptionId];
-        require(userWinningShares > 0, "No winning shares");
+    uint256 userWinningShares = market.userShares[msg.sender][market.winningOptionId];
+    require(userWinningShares > 0, "No winning shares");
 
+    uint256 winnings = 0;
+    if (market.freeEntry) {
+        // Distribute reward proportionally among winners
+        uint256 totalWinningShares = market.options[market.winningOptionId].totalShares;
+        winnings = (userWinningShares * market.rewardAmount) / totalWinningShares;
+    } else {
         uint256 totalWinningShares = market.options[market.winningOptionId].totalShares;
         uint256 totalLosingValue = market.totalLiquidity - (totalWinningShares * market.options[market.winningOptionId].currentPrice / 1e18);
-        
-        uint256 winnings = (userWinningShares * market.options[market.winningOptionId].currentPrice / 1e18) + 
-                          (userWinningShares * totalLosingValue / totalWinningShares);
-
-        market.hasClaimed[msg.sender] = true;
-        userPortfolios[msg.sender].totalWinnings += winnings;
-        totalWinnings[msg.sender] += winnings;
-
-        require(bettingToken.transfer(msg.sender, winnings), "Transfer failed");
-        emit Claimed(_marketId, msg.sender, winnings);
+        winnings = (userWinningShares * market.options[market.winningOptionId].currentPrice / 1e18) + 
+                   (userWinningShares * totalLosingValue / totalWinningShares);
     }
+
+    market.hasClaimed[msg.sender] = true;
+    userPortfolios[msg.sender].totalWinnings += winnings;
+    totalWinnings[msg.sender] += winnings;
+
+    require(bettingToken.transfer(msg.sender, winnings), "Transfer failed");
+    emit Claimed(_marketId, msg.sender, winnings);
+}
 
     // Price Calculation Functions
     function calculateCurrentPrice(uint256 _marketId, uint256 _optionId) public view returns (uint256) {

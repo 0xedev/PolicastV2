@@ -1,6 +1,6 @@
 {
 	"compiler": {
-		"version": "0.8.24+commit.e11b9ed9"
+		"version": "0.8.26+commit.8a97fa7a"
 	},
 	"language": "Solidity",
 	"output": {
@@ -753,6 +753,16 @@
 						"internalType": "enum PolicastMarketV2.MarketCategory",
 						"name": "_category",
 						"type": "uint8"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_rewardAmount",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bool",
+						"name": "_freeEntry",
+						"type": "bool"
 					}
 				],
 				"name": "createMarket",
@@ -1440,6 +1450,16 @@
 						"internalType": "uint256",
 						"name": "feeCollected",
 						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "rewardAmount",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bool",
+						"name": "freeEntry",
+						"type": "bool"
 					}
 				],
 				"stateMutability": "view",
@@ -2021,7 +2041,7 @@
 		"compilationTarget": {
 			"v2.sol": "PolicastMarketV2"
 		},
-		"evmVersion": "shanghai",
+		"evmVersion": "cancun",
 		"libraries": {},
 		"metadata": {
 			"bytecodeHash": "ipfs"
@@ -2107,11 +2127,11 @@
 			]
 		},
 		"v2.sol": {
-			"keccak256": "0xef08136f948c062b449e52d3e7844b4a509c148010c73b2419c5bd023b778a8d",
+			"keccak256": "0x5b011ba764c02b2c8cd3faeeeb1a10c4442c3f8abed8f4610cfdb6e3893c09fc",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://4c6e495f91e51f20eab3c27b5786c7e8e3de58545a8e83d3bcbd3c4f781685a4",
-				"dweb:/ipfs/QmUciKCRjVcucYb7PbvVhTvrTFUhnK7efV6Whm5yr82raK"
+				"bzz-raw://71c0d117df45ac95406c781f82ef8e18bb3ccd34bc70f70abadd1b1219e644fc",
+				"dweb:/ipfs/QmTdihQELooD2sWBWoGap5C25sPwRQEfm8MDhdv63hg4Eo"
 			]
 		}
 	},
