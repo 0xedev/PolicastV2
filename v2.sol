@@ -8,6 +8,49 @@ import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 
 contract PolicastMarketV2 is Ownable, ReentrancyGuard, AccessControl, Pausable {
+    // ERRORS
+    error InsufficientBalance();
+    error InvalidMarket();
+    error MarketNotActive();
+    error InvalidOption();
+    error NotAuthorized();
+    error MarketAlreadyResolved();
+    error MarketNotResolved();
+    error AlreadyClaimed();
+    error NoWinningShares();
+    error TransferFailed();
+    error InvalidInput();
+    error OnlyAdminOrOwner();
+    error MarketEnded();
+    // error MarketAlreadyResolved();
+    error OptionInactive();
+    error FeeTooHigh();
+    error BadDuration();
+    error EmptyQuestion();
+    error BadOptionCount();
+    error LengthMismatch();
+    error MinTokensRequired();
+    error SamePrizeRequired();
+    error NotFreeMarket();
+    error FreeEntryInactive();
+    error AlreadyClaimedFree();
+    error FreeSlotseFull();
+    error ExceedsFreeAllowance();
+    error CannotSwapSameOption();
+    error AmountMustBePositive();
+    error InsufficientShares();
+    error InsufficientOutput();
+    error InsufficientLiquidity();
+    error MarketNotValidated();
+    error PriceTooHigh();
+    error PriceTooLow();
+    error MarketNotEndedYet();
+    error InvalidWinningOption();
+    error CannotDisputeIfWon();
+    error MarketNotReady();
+    error InvalidToken();
+    error SameToken();
+
     bytes32 public constant QUESTION_CREATOR_ROLE = keccak256("QUESTION_CREATOR_ROLE");
     bytes32 public constant QUESTION_RESOLVE_ROLE = keccak256("QUESTION_RESOLVE_ROLE");
     bytes32 public constant MARKET_VALIDATOR_ROLE = keccak256("MARKET_VALIDATOR_ROLE");
@@ -180,12 +223,9 @@ contract PolicastMarketV2 is Ownable, ReentrancyGuard, AccessControl, Pausable {
 
     // Token Management Functions
     function updateBettingToken(address _newToken) external {
-        require(
-            msg.sender == owner() || hasRole(DEFAULT_ADMIN_ROLE, msg.sender),
-            "Only owner or admin can update betting token"
-        );
-        require(_newToken != address(0), "Invalid token");
-        require(_newToken != address(bettingToken), "Same token");
+        if (msg.sender != owner() && !hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) revert OnlyAdminOrOwner();
+        if (_newToken == address(0)) revert InvalidToken();
+        if (_newToken == address(bettingToken)) revert SameToken();
         
         previousBettingToken = address(bettingToken);
         bettingToken = IERC20(_newToken);
@@ -200,19 +240,19 @@ contract PolicastMarketV2 is Ownable, ReentrancyGuard, AccessControl, Pausable {
 
     // Modifiers
     modifier validMarket(uint256 _marketId) {
-        require(_marketId < marketCount, "Invalid market");
+        if (_marketId >= marketCount) revert InvalidMarket();
         _;
     }
 
     modifier marketActive(uint256 _marketId) {
-        require(block.timestamp < markets[_marketId].endTime, "Market ended");
-        require(!markets[_marketId].resolved, "Market resolved");
+        if (block.timestamp >= markets[_marketId].endTime) revert MarketEnded();
+        if (markets[_marketId].resolved) revert MarketAlreadyResolved();
         _;
     }
 
     modifier validOption(uint256 _marketId, uint256 _optionId) {
-        require(_optionId < markets[_marketId].optionCount, "Invalid option");
-        require(markets[_marketId].options[_optionId].isActive, "Option inactive");
+        if (_optionId >= markets[_marketId].optionCount) revert InvalidOption();
+        if (!markets[_marketId].options[_optionId].isActive) revert OptionInactive();
         _;
     }
 
@@ -230,7 +270,7 @@ contract PolicastMarketV2 is Ownable, ReentrancyGuard, AccessControl, Pausable {
     }
 
     function setPlatformFeeRate(uint256 _feeRate) external onlyOwner {
-        require(_feeRate <= 1000, "Fee too high");
+        if (_feeRate > 1000) revert FeeTooHigh();
         platformFeeRate = _feeRate;
     }
 
@@ -253,18 +293,15 @@ contract PolicastMarketV2 is Ownable, ReentrancyGuard, AccessControl, Pausable {
         MarketType _marketType,
         uint256 _initialLiquidity
     ) public whenNotPaused returns (uint256) {
-        require(
-            msg.sender == owner() || hasRole(QUESTION_CREATOR_ROLE, msg.sender),
-            "Not authorized to create markets"
-        );
-        require(_duration >= MIN_MARKET_DURATION && _duration <= MAX_MARKET_DURATION, "Bad duration");
-        require(bytes(_question).length > 0, "Empty question");
-        require(_optionNames.length >= 2 && _optionNames.length <= MAX_OPTIONS, "Bad option count");
-        require(_optionNames.length == _optionDescriptions.length, "Length mismatch");
-        require(_initialLiquidity >= 100 * 1e18, "Min 100 tokens");
+        if (msg.sender != owner() && !hasRole(QUESTION_CREATOR_ROLE, msg.sender)) revert NotAuthorized();
+        if (_duration < MIN_MARKET_DURATION || _duration > MAX_MARKET_DURATION) revert BadDuration();
+        if (bytes(_question).length == 0) revert EmptyQuestion();
+        if (_optionNames.length < 2 || _optionNames.length > MAX_OPTIONS) revert BadOptionCount();
+        if (_optionNames.length != _optionDescriptions.length) revert LengthMismatch();
+        if (_initialLiquidity < 100 * 1e18) revert MinTokensRequired();
 
         // Transfer initial liquidity from creator
-        require(bettingToken.transferFrom(msg.sender, address(this), _initialLiquidity), "Liquidity transfer failed");
+        if (!bettingToken.transferFrom(msg.sender, address(this), _initialLiquidity)) revert TransferFailed();
 
         uint256 marketId = marketCount++;
         Market storage market = markets[marketId];
@@ -345,7 +382,7 @@ contract PolicastMarketV2 is Ownable, ReentrancyGuard, AccessControl, Pausable {
         string memory _sponsorMessage,
         uint256 _initialLiquidity
     ) external payable whenNotPaused returns (uint256) {
-        require(msg.value > 0, "Sponsor prize required");
+        if (msg.value == 0) revert SamePrizeRequired();
         
         uint256 marketId = createMarket(_question, _description, _optionNames, _optionDescriptions, _duration, _category, MarketType.SPONSORED, _initialLiquidity);
         
@@ -374,8 +411,8 @@ contract PolicastMarketV2 is Ownable, ReentrancyGuard, AccessControl, Pausable {
     }
 
     function validateMarket(uint256 _marketId) external validMarket(_marketId) {
-        require(hasRole(MARKET_VALIDATOR_ROLE, msg.sender) || msg.sender == owner(), "Not authorized");
-        require(!markets[_marketId].validated, "Market already validated");
+        if (!hasRole(MARKET_VALIDATOR_ROLE, msg.sender) && msg.sender != owner()) revert NotAuthorized();
+        if (markets[_marketId].validated) revert MarketAlreadyResolved();
         
         markets[_marketId].validated = true;
         emit MarketValidated(_marketId, msg.sender);
@@ -387,11 +424,11 @@ contract PolicastMarketV2 is Ownable, ReentrancyGuard, AccessControl, Pausable {
         uint256 _optionId
     ) external nonReentrant whenNotPaused validMarket(_marketId) marketActive(_marketId) validOption(_marketId, _optionId) {
         Market storage market = markets[_marketId];
-        require(market.marketType == MarketType.FREE_ENTRY, "Not a free market");
-        require(market.freeConfig.isActive, "Free entry no longer active");
-        require(!market.freeConfig.hasClaimedFree[msg.sender], "Already claimed free shares");
-        require(market.freeConfig.currentFreeParticipants < market.freeConfig.maxFreeParticipants, "Free slots full");
-        require(userFreeSharesUsed[msg.sender] + market.freeConfig.freeSharesPerUser <= freeMarketAllowance, "Exceeds free allowance");
+        if (market.marketType != MarketType.FREE_ENTRY) revert NotFreeMarket();
+        if (!market.freeConfig.isActive) revert FreeEntryInactive();
+        if (market.freeConfig.hasClaimedFree[msg.sender]) revert AlreadyClaimedFree();
+        if (market.freeConfig.currentFreeParticipants >= market.freeConfig.maxFreeParticipants) revert FreeSlotseFull();
+        if (userFreeSharesUsed[msg.sender] + market.freeConfig.freeSharesPerUser > freeMarketAllowance) revert ExceedsFreeAllowance();
 
         uint256 freeShares = market.freeConfig.freeSharesPerUser;
         
@@ -427,9 +464,9 @@ contract PolicastMarketV2 is Ownable, ReentrancyGuard, AccessControl, Pausable {
         uint256 _amountIn,
         uint256 _minAmountOut
     ) external nonReentrant whenNotPaused validMarket(_marketId) marketActive(_marketId) returns (uint256 amountOut) {
-        require(_optionIdIn != _optionIdOut, "Cannot swap same option");
-        require(_amountIn > 0, "Amount must be positive");
-        require(markets[_marketId].userShares[msg.sender][_optionIdIn] >= _amountIn, "Insufficient shares");
+        if (_optionIdIn == _optionIdOut) revert CannotSwapSameOption();
+        if (_amountIn == 0) revert AmountMustBePositive();
+        if (markets[_marketId].userShares[msg.sender][_optionIdIn] < _amountIn) revert InsufficientShares();
 
         Market storage market = markets[_marketId];
         MarketOption storage optionIn = market.options[_optionIdIn];
@@ -444,8 +481,8 @@ contract PolicastMarketV2 is Ownable, ReentrancyGuard, AccessControl, Pausable {
         
         // Calculate output amount: amountOut = (reserveOut * amountInWithFee) / (reserveIn + amountInWithFee)
         amountOut = (reserveOut * amountInWithFee) / (reserveIn + amountInWithFee);
-        require(amountOut >= _minAmountOut, "Insufficient output amount");
-        require(amountOut < reserveOut, "Insufficient liquidity");
+        if (amountOut < _minAmountOut) revert InsufficientOutput();
+        if (amountOut >= reserveOut) revert InsufficientLiquidity();
 
         // Update reserves
         optionIn.reserve += _amountIn;
@@ -482,20 +519,20 @@ contract PolicastMarketV2 is Ownable, ReentrancyGuard, AccessControl, Pausable {
         uint256 _quantity,
         uint256 _maxPricePerShare
     ) external nonReentrant whenNotPaused validMarket(_marketId) marketActive(_marketId) validOption(_marketId, _optionId) {
-        require(_quantity > 0, "Quantity must be positive");
-        require(markets[_marketId].validated, "Market not validated");
+        if (_quantity == 0) revert AmountMustBePositive();
+        if (!markets[_marketId].validated) revert MarketNotValidated();
 
         Market storage market = markets[_marketId];
         MarketOption storage option = market.options[_optionId];
 
         uint256 currentPrice = calculateCurrentPrice(_marketId, _optionId);
-        require(currentPrice <= _maxPricePerShare, "Price too high");
+        if (currentPrice > _maxPricePerShare) revert PriceTooHigh();
 
         uint256 totalCost = currentPrice * _quantity / 1e18;
         uint256 fee = totalCost * platformFeeRate / 10000;
         uint256 netCost = totalCost + fee;
 
-        require(bettingToken.transferFrom(msg.sender, address(this), netCost), "Transfer failed");
+        if (!bettingToken.transferFrom(msg.sender, address(this), netCost)) revert TransferFailed();
 
         // Update user shares
         if (market.userShares[msg.sender][_optionId] == 0 && _isNewParticipant(msg.sender, _marketId)) {
@@ -550,14 +587,14 @@ contract PolicastMarketV2 is Ownable, ReentrancyGuard, AccessControl, Pausable {
         uint256 _quantity,
         uint256 _minPricePerShare
     ) external nonReentrant whenNotPaused validMarket(_marketId) marketActive(_marketId) validOption(_marketId, _optionId) {
-        require(_quantity > 0, "Quantity must be positive");
-        require(markets[_marketId].userShares[msg.sender][_optionId] >= _quantity, "Insufficient shares");
+        if (_quantity == 0) revert AmountMustBePositive();
+        if (markets[_marketId].userShares[msg.sender][_optionId] < _quantity) revert InsufficientShares();
 
         Market storage market = markets[_marketId];
         MarketOption storage option = market.options[_optionId];
 
         uint256 currentPrice = calculateCurrentPrice(_marketId, _optionId);
-        require(currentPrice >= _minPricePerShare, "Price too low");
+        if (currentPrice < _minPricePerShare) revert PriceTooLow();
 
         uint256 totalRevenue = currentPrice * _quantity / 1e18;
         uint256 fee = totalRevenue * platformFeeRate / 10000;
@@ -600,7 +637,7 @@ contract PolicastMarketV2 is Ownable, ReentrancyGuard, AccessControl, Pausable {
         userTradeHistory[msg.sender].push(trade);
         marketTrades[_marketId].push(trade);
 
-        require(bettingToken.transfer(msg.sender, netRevenue), "Transfer failed");
+        if (!bettingToken.transfer(msg.sender, netRevenue)) revert TransferFailed();
 
         emit SharesSold(_marketId, _optionId, msg.sender, _quantity, currentPrice);
         emit TradeExecuted(_marketId, _optionId, address(0), msg.sender, currentPrice, _quantity, tradeCount++);
@@ -609,14 +646,11 @@ contract PolicastMarketV2 is Ownable, ReentrancyGuard, AccessControl, Pausable {
 
     // Market Resolution
     function resolveMarket(uint256 _marketId, uint256 _winningOptionId) external validMarket(_marketId) {
-        require(
-            msg.sender == owner() || hasRole(QUESTION_RESOLVE_ROLE, msg.sender),
-            "Not authorized to resolve markets"
-        );
+        if (msg.sender != owner() && !hasRole(QUESTION_RESOLVE_ROLE, msg.sender)) revert NotAuthorized();
         Market storage market = markets[_marketId];
-        require(block.timestamp >= market.endTime, "Market has not ended yet");
-        require(!market.resolved, "Market already resolved");
-        require(_winningOptionId < market.optionCount, "Invalid winning option");
+        if (block.timestamp < market.endTime) revert MarketNotEndedYet();
+        if (market.resolved) revert MarketAlreadyResolved();
+        if (_winningOptionId >= market.optionCount) revert InvalidWinningOption();
 
         market.winningOptionId = _winningOptionId;
         market.resolved = true;
@@ -625,9 +659,9 @@ contract PolicastMarketV2 is Ownable, ReentrancyGuard, AccessControl, Pausable {
     }
 
     function disputeMarket(uint256 _marketId, string memory _reason) external validMarket(_marketId) {
-        require(markets[_marketId].resolved, "Market not resolved yet");
-        require(!markets[_marketId].disputed, "Market already disputed");
-        require(markets[_marketId].userShares[msg.sender][markets[_marketId].winningOptionId] == 0, "Cannot dispute if you won");
+        if (!markets[_marketId].resolved) revert MarketNotResolved();
+        if (markets[_marketId].disputed) revert AlreadyClaimed();
+        if (markets[_marketId].userShares[msg.sender][markets[_marketId].winningOptionId] > 0) revert CannotDisputeIfWon();
 
         markets[_marketId].disputed = true;
         emit MarketDisputed(_marketId, msg.sender, _reason);
@@ -636,11 +670,11 @@ contract PolicastMarketV2 is Ownable, ReentrancyGuard, AccessControl, Pausable {
     // Payout Functions
     function claimWinnings(uint256 _marketId) external nonReentrant validMarket(_marketId) {
         Market storage market = markets[_marketId];
-        require(market.resolved && !market.disputed, "Market not ready for claims");
-        require(!market.hasClaimed[msg.sender], "Already claimed");
+        if (!market.resolved || market.disputed) revert MarketNotReady();
+        if (market.hasClaimed[msg.sender]) revert AlreadyClaimed();
 
         uint256 userWinningShares = market.userShares[msg.sender][market.winningOptionId];
-        require(userWinningShares > 0, "No winning shares");
+        if (userWinningShares == 0) revert NoWinningShares();
 
         uint256 totalWinningShares = market.options[market.winningOptionId].totalShares;
         uint256 totalLosingValue = market.totalLiquidity - (totalWinningShares * market.options[market.winningOptionId].currentPrice / 1e18);
@@ -652,7 +686,7 @@ contract PolicastMarketV2 is Ownable, ReentrancyGuard, AccessControl, Pausable {
         userPortfolios[msg.sender].totalWinnings += winnings;
         totalWinnings[msg.sender] += winnings;
 
-        require(bettingToken.transfer(msg.sender, winnings), "Transfer failed");
+        if (!bettingToken.transfer(msg.sender, winnings)) revert TransferFailed();
         emit Claimed(_marketId, msg.sender, winnings);
     }
 
@@ -683,8 +717,8 @@ contract PolicastMarketV2 is Ownable, ReentrancyGuard, AccessControl, Pausable {
 
     // Add AMM Liquidity
     function addAMMLiquidity(uint256 _marketId, uint256 _amount) external nonReentrant validMarket(_marketId) {
-        require(_amount > 0, "Amount must be positive");
-        require(bettingToken.transferFrom(msg.sender, address(this), _amount), "Transfer failed");
+        if (_amount == 0) revert AmountMustBePositive();
+        if (!bettingToken.transferFrom(msg.sender, address(this), _amount)) revert TransferFailed();
         
         Market storage market = markets[_marketId];
         market.ammLiquidityPool += _amount;
@@ -736,7 +770,7 @@ contract PolicastMarketV2 is Ownable, ReentrancyGuard, AccessControl, Pausable {
     }
 
     function updateBettingTokenAddress(address _newToken) external onlyOwner {
-        require(_newToken != address(0), "Invalid token address");
+        if (_newToken == address(0)) revert InvalidToken();
         previousBettingToken = address(bettingToken);
         bettingToken = IERC20(_newToken);
         tokenUpdatedAt = block.timestamp;

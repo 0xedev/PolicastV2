@@ -39,12 +39,187 @@
 			},
 			{
 				"inputs": [],
+				"name": "AlreadyClaimed",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "AlreadyClaimedFree",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "AmountMustBePositive",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "BadDuration",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "BadOptionCount",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "CannotDisputeIfWon",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "CannotSwapSameOption",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "EmptyQuestion",
+				"type": "error"
+			},
+			{
+				"inputs": [],
 				"name": "EnforcedPause",
 				"type": "error"
 			},
 			{
 				"inputs": [],
+				"name": "ExceedsFreeAllowance",
+				"type": "error"
+			},
+			{
+				"inputs": [],
 				"name": "ExpectedPause",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "FeeTooHigh",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "FreeEntryInactive",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "FreeSlotseFull",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "InsufficientBalance",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "InsufficientLiquidity",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "InsufficientOutput",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "InsufficientShares",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "InvalidInput",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "InvalidMarket",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "InvalidOption",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "InvalidToken",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "InvalidWinningOption",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "LengthMismatch",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "MarketAlreadyResolved",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "MarketEnded",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "MarketNotActive",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "MarketNotEndedYet",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "MarketNotReady",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "MarketNotResolved",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "MarketNotValidated",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "MinTokensRequired",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "NoWinningShares",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "NotAuthorized",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "NotFreeMarket",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "OnlyAdminOrOwner",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "OptionInactive",
 				"type": "error"
 			},
 			{
@@ -71,7 +246,32 @@
 			},
 			{
 				"inputs": [],
+				"name": "PriceTooHigh",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "PriceTooLow",
+				"type": "error"
+			},
+			{
+				"inputs": [],
 				"name": "ReentrancyGuardReentrantCall",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "SamePrizeRequired",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "SameToken",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "TransferFailed",
 				"type": "error"
 			},
 			{
@@ -402,80 +602,6 @@
 					}
 				],
 				"name": "MarketValidated",
-				"type": "event"
-			},
-			{
-				"anonymous": false,
-				"inputs": [
-					{
-						"indexed": true,
-						"internalType": "uint256",
-						"name": "orderId",
-						"type": "uint256"
-					},
-					{
-						"indexed": false,
-						"internalType": "address",
-						"name": "maker",
-						"type": "address"
-					}
-				],
-				"name": "OrderCancelled",
-				"type": "event"
-			},
-			{
-				"anonymous": false,
-				"inputs": [
-					{
-						"indexed": true,
-						"internalType": "uint256",
-						"name": "orderId",
-						"type": "uint256"
-					},
-					{
-						"indexed": true,
-						"internalType": "uint256",
-						"name": "marketId",
-						"type": "uint256"
-					},
-					{
-						"indexed": true,
-						"internalType": "uint256",
-						"name": "optionId",
-						"type": "uint256"
-					},
-					{
-						"indexed": false,
-						"internalType": "address",
-						"name": "maker",
-						"type": "address"
-					},
-					{
-						"indexed": false,
-						"internalType": "enum PolicastMarketV2.OrderType",
-						"name": "orderType",
-						"type": "uint8"
-					},
-					{
-						"indexed": false,
-						"internalType": "enum PolicastMarketV2.OrderSide",
-						"name": "side",
-						"type": "uint8"
-					},
-					{
-						"indexed": false,
-						"internalType": "uint256",
-						"name": "price",
-						"type": "uint256"
-					},
-					{
-						"indexed": false,
-						"internalType": "uint256",
-						"name": "quantity",
-						"type": "uint256"
-					}
-				],
-				"name": "OrderPlaced",
 				"type": "event"
 			},
 			{
@@ -1279,146 +1405,6 @@
 				"type": "function"
 			},
 			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "_start",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "_limit",
-						"type": "uint256"
-					}
-				],
-				"name": "getLeaderboard",
-				"outputs": [
-					{
-						"components": [
-							{
-								"internalType": "address",
-								"name": "user",
-								"type": "address"
-							},
-							{
-								"internalType": "uint256",
-								"name": "totalWinnings",
-								"type": "uint256"
-							},
-							{
-								"internalType": "uint256",
-								"name": "totalVolume",
-								"type": "uint256"
-							},
-							{
-								"internalType": "uint256",
-								"name": "winRate",
-								"type": "uint256"
-							},
-							{
-								"internalType": "uint256",
-								"name": "tradeCount",
-								"type": "uint256"
-							}
-						],
-						"internalType": "struct PolicastMarketV2.LeaderboardEntry[]",
-						"name": "",
-						"type": "tuple[]"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "_marketId",
-						"type": "uint256"
-					}
-				],
-				"name": "getMarket",
-				"outputs": [
-					{
-						"internalType": "string",
-						"name": "question",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "description",
-						"type": "string"
-					},
-					{
-						"internalType": "uint256",
-						"name": "endTime",
-						"type": "uint256"
-					},
-					{
-						"internalType": "enum PolicastMarketV2.MarketCategory",
-						"name": "category",
-						"type": "uint8"
-					},
-					{
-						"internalType": "enum PolicastMarketV2.MarketType",
-						"name": "marketType",
-						"type": "uint8"
-					},
-					{
-						"internalType": "uint256",
-						"name": "winningOptionId",
-						"type": "uint256"
-					},
-					{
-						"internalType": "bool",
-						"name": "resolved",
-						"type": "bool"
-					},
-					{
-						"internalType": "bool",
-						"name": "disputed",
-						"type": "bool"
-					},
-					{
-						"internalType": "bool",
-						"name": "validated",
-						"type": "bool"
-					},
-					{
-						"internalType": "address",
-						"name": "creator",
-						"type": "address"
-					},
-					{
-						"internalType": "uint256",
-						"name": "totalLiquidity",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "totalVolume",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "createdAt",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "optionCount",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "ammLiquidityPool",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
 				"inputs": [],
 				"name": "getMarketCount",
 				"outputs": [
@@ -1553,57 +1539,6 @@
 						"internalType": "bool",
 						"name": "isActive",
 						"type": "bool"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "_marketId",
-						"type": "uint256"
-					}
-				],
-				"name": "getMarketStats",
-				"outputs": [
-					{
-						"components": [
-							{
-								"internalType": "uint256",
-								"name": "totalVolume",
-								"type": "uint256"
-							},
-							{
-								"internalType": "uint256",
-								"name": "participantCount",
-								"type": "uint256"
-							},
-							{
-								"internalType": "uint256",
-								"name": "averagePrice",
-								"type": "uint256"
-							},
-							{
-								"internalType": "uint256",
-								"name": "priceVolatility",
-								"type": "uint256"
-							},
-							{
-								"internalType": "uint256",
-								"name": "lastTradePrice",
-								"type": "uint256"
-							},
-							{
-								"internalType": "uint256",
-								"name": "lastTradeTime",
-								"type": "uint256"
-							}
-						],
-						"internalType": "struct PolicastMarketV2.MarketStats",
-						"name": "",
-						"type": "tuple"
 					}
 				],
 				"stateMutability": "view",
@@ -1875,30 +1810,6 @@
 						"type": "uint256"
 					}
 				],
-				"name": "marketOrderBook",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
 				"name": "marketTrades",
 				"outputs": [
 					{
@@ -1935,11 +1846,6 @@
 						"internalType": "uint256",
 						"name": "timestamp",
 						"type": "uint256"
-					},
-					{
-						"internalType": "enum PolicastMarketV2.OrderType",
-						"name": "orderType",
-						"type": "uint8"
 					}
 				],
 				"stateMutability": "view",
@@ -1964,88 +1870,6 @@
 						"internalType": "uint256",
 						"name": "",
 						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "orderCount",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"name": "orders",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "id",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "marketId",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "optionId",
-						"type": "uint256"
-					},
-					{
-						"internalType": "address",
-						"name": "maker",
-						"type": "address"
-					},
-					{
-						"internalType": "enum PolicastMarketV2.OrderType",
-						"name": "orderType",
-						"type": "uint8"
-					},
-					{
-						"internalType": "enum PolicastMarketV2.OrderSide",
-						"name": "side",
-						"type": "uint8"
-					},
-					{
-						"internalType": "uint256",
-						"name": "price",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "quantity",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "filled",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "timestamp",
-						"type": "uint256"
-					},
-					{
-						"internalType": "bool",
-						"name": "isActive",
-						"type": "bool"
 					}
 				],
 				"stateMutability": "view",
@@ -2412,30 +2236,6 @@
 						"internalType": "address",
 						"name": "",
 						"type": "address"
-					},
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"name": "userOrders",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "",
-						"type": "address"
 					}
 				],
 				"name": "userPortfolios",
@@ -2518,11 +2318,6 @@
 						"internalType": "uint256",
 						"name": "timestamp",
 						"type": "uint256"
-					},
-					{
-						"internalType": "enum PolicastMarketV2.OrderType",
-						"name": "orderType",
-						"type": "uint8"
 					}
 				],
 				"stateMutability": "view",
@@ -2728,11 +2523,11 @@
 			]
 		},
 		"v2.sol": {
-			"keccak256": "0x06940e3119646fdbd6fef2dec3b4bbcedea11f189588005667a343f54ca654fd",
+			"keccak256": "0xd9a2744435fa58ade0297414e37b4a426b4124a69eedcc6980d900187800f0f6",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://53d56968d40dba0f2bcf18beaa3bc8b72e9138fd642b75f63f1e6cbd168bba18",
-				"dweb:/ipfs/QmNav6xGa9hNUk5MGqBEMvajCibvUGA98VnpNhsuj8pVBt"
+				"bzz-raw://01470eb2832bc49a9cfcc3e391b5651f41c315dce4898880c33c15b537d26543",
+				"dweb:/ipfs/QmSse9Dt5HW4Ug96tf8FgM7xbP9BKX3M6EMGP85QkqfT5k"
 			]
 		}
 	},
