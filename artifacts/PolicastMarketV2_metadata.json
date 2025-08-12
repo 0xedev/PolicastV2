@@ -2728,11 +2728,11 @@
 			]
 		},
 		"v2.sol": {
-			"keccak256": "0x943e9a51e25680d1d1a1913eb18615408f5e0e470e6206711d2672fda229259b",
+			"keccak256": "0x06940e3119646fdbd6fef2dec3b4bbcedea11f189588005667a343f54ca654fd",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://6fb9592d4f93cb5c5b2a2a4d1f58c6dc8204d294ce781f25d7b04ec34c94c7fb",
-				"dweb:/ipfs/QmNv511L7n9ABzsYfkZTspVPSLk3fQ5beDMhyhMLL42edV"
+				"bzz-raw://53d56968d40dba0f2bcf18beaa3bc8b72e9138fd642b75f63f1e6cbd168bba18",
+				"dweb:/ipfs/QmNav6xGa9hNUk5MGqBEMvajCibvUGA98VnpNhsuj8pVBt"
 			]
 		}
 	},
